@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Strava Coding Test</title>
+</head>
+
+<body>
+  <h1>42Race Mini</h1>
+  <p>Welcome <%= user.full_name %> </p>
+  <p>Your Strava account has successfully connected with this app</p>
+  <p>You can click the button below to disconnect your Strava account</p>
+  <form action="/disconnect" method="post">
+    <input type="submit" value="Disconnect Strava Account">
+  </form>
+</body>
+
+</html>

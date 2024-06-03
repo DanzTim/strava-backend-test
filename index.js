@@ -18,6 +18,12 @@ const uri = `mongodb+srv://${mongoUser}:${mongoPassword}@${mongoCluster}.mongodb
 
 mongoose.connect(uri);
 
+app.set('view engine', 'ejs');
+
+app.get('/', (req, res) => {
+	res.render('login');
+});
+
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET || 'secret123',
@@ -74,16 +80,39 @@ app.get(
 	passport.authenticate('strava', { scope: ['activity:read_all'] })
 );
 
+app.post('/disconnect', (req, res, next) => {
+	if (req.session) {
+		req.session.destroy();
+	}
+	res.clearCookie('connect.sid');
+	if (req.user) {
+		Account.deleteOne({ _id: req.user.id }).catch((err) => {
+			console.log(err);
+			next(err);
+		});
+		req.logout(function (err) {
+			if (err) {
+				return next(err);
+			}
+		});
+	}
+	res.render('logout');
+});
+
 app.use('/activities', actRoutes);
 
 app.get('/login', (req, res, next) => {
-	console.log(req.session);
-	res.send('Login Attempt Failed.');
+	res.render('failed-login');
 });
 
 app.get('/home', (req, res, next) => {
-	console.log(req.session);
-	res.send('Login Attempt was successful.');
+	if(!req.user){
+		res.render('logout')
+	}else{
+		res.render('home', {
+			user: req.user
+		});
+	}
 });
 
 app.get(

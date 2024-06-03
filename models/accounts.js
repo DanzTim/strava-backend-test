@@ -10,7 +10,7 @@ const accountSchema = new mongoose.Schema({
 	sex: String,
 	created_at: { type: Date, required: true, default: Date.now },
 }, {
-  collection: 'strava'
+  collection: 'accounts'
 });
 
 const Account = mongoose.model('accounts', accountSchema);
