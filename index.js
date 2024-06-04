@@ -4,8 +4,11 @@ const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
-const actRoutes = require('./activities');
+const activities = require('./activities');
+const webhook = require('./webhook');
+const accounts = require('./accounts');
 const Account = require('./models/accounts');
+const path = require('path');
 const StravaStrategy = require('passport-strava-oauth2').Strategy;
 
 const app = express();
@@ -18,8 +21,14 @@ const uri = `mongodb+srv://${mongoUser}:${mongoPassword}@${mongoCluster}.mongodb
 
 mongoose.connect(uri);
 
+
+app.use('/favicon.ico', express.static('images/favicon.ico'));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+app.get('/favicon.ico', (req, res) => {
+	return res.sendFile(path.join(__dirname + '/images/favicon.ico'));
+});
 app.get('/', (req, res) => {
 	res.render('login');
 });
@@ -99,7 +108,9 @@ app.post('/disconnect', (req, res, next) => {
 	res.render('logout');
 });
 
-app.use('/activities', actRoutes);
+app.use('/accounts', accounts);
+app.use('/activities', activities);
+app.use('/webhook', webhook);
 
 app.get('/login', (req, res, next) => {
 	res.render('failed-login');
@@ -133,3 +144,5 @@ app.listen(PORT, (error) => {
 	if (!error) console.log('Server running on port ' + PORT);
 	else console.log("Error occurred, server can't start", error);
 });
+
+module.exports = app;
