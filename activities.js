@@ -3,28 +3,22 @@ const Activity = require('./models/activities')
 
 //List all activities 
 router.get('/get-all', async (req, res, next) => {
-  let activities = await Activity.find().catch((err) => {
-    console.error(err);
-  });
+  let activities = Activity.find({});
   if(req.query.type){
-    activities = await Activity.find({ object_type: req.query.type }).catch((err) => {
-			console.error(err);
-		});
+    activities = Activity.find({ object_type: req.query.type })
   }
   if (req.query.user_id) {
-		activities = await Activity.find({ owner_id: req.query.user_id }).catch(
-			(err) => {
-				console.error(err);
-			}
-		);
+		activities = Activity.find({ owner_id: req.query.user_id })
 	}
   if (req.query.user_id && req.query.type) {
-		activities = await Activity.find({ owner_id: req.query.user_id, object_type: req.query.type }).catch(
-			(err) => {
-				console.error(err);
-			}
-		);
+		activities = Activity.find({ owner_id: req.query.user_id, object_type: req.query.type })
 	}
+  activities = await activities
+		.sort({ event_time: 'desc' })
+		.exec()
+		.catch((err) => {
+			console.error(err);
+		});
 	res.json(activities);
 });
 
@@ -38,6 +32,7 @@ router.get('/:id', async (req, res, next) => {
 	res.json(accounts);
 });
 
+// Delete activity by id
 router.delete('/:id', async (req, res, next) => {
   await Activity.deleteOne({ object_id: req.params.id }).catch(
 		(err) => {

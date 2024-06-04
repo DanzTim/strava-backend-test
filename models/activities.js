@@ -4,15 +4,16 @@ const activitySchema = new mongoose.Schema(
 	{
 		event_time: {
 			type: Date,
-			set: (d) => new Date(d * 1000),
 		},
 		object_id: String,
+		name: String,
+		type: String,
 		object_type: String,
 		owner_id: String,
 		created_at: { type: Date, required: true, default: Date.now },
 	},
 	{
-		collection: 'activity',
+		collection: 'activities',
 	}
 );
 

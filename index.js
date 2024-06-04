@@ -1,4 +1,5 @@
 require('dotenv').config();
+var request = require('request');
 const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
@@ -9,6 +10,7 @@ const webhook = require('./webhook');
 const accounts = require('./accounts');
 const Account = require('./models/accounts');
 const path = require('path');
+const Activity = require('./models/activities');
 const StravaStrategy = require('passport-strava-oauth2').Strategy;
 
 const app = express();
@@ -20,7 +22,6 @@ const mongoCluster = process.env.DB_CLUSTER;
 const uri = `mongodb+srv://${mongoUser}:${mongoPassword}@${mongoCluster}.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster`;
 
 mongoose.connect(uri);
-
 
 app.use('/favicon.ico', express.static('images/favicon.ico'));
 app.set('views', path.join(__dirname, 'views'));
@@ -117,11 +118,34 @@ app.get('/login', (req, res, next) => {
 });
 
 app.get('/home', (req, res, next) => {
-	if(!req.user){
-		res.render('logout')
-	}else{
+	let { user } = req;
+	if (!user) {
+		res.render('logout');
+	} else {
+		request(
+			`https://www.strava.com/api/v3/athlete/activities?access_token=${user.token}`,
+			async function (error, response, body) {
+				if (!error && response.statusCode == 200) {
+					try {
+						let activities = JSON.parse(body);
+						for (const activity in activities) {
+							let found = await Activity.findById(activity.id);
+							if (!found) {
+								await Activity.create({
+									_id: activity.id,
+									name: activity.name,
+									type: activity.type,
+									event_time: activity.start_date,
+									owner_id: user.id,
+								}).catch((err) => console.error(err));
+							}
+						}
+					} catch (error) {}
+				}
+			}
+		);
 		res.render('home', {
-			user: req.user
+			user: user,
 		});
 	}
 });

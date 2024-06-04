@@ -5,7 +5,8 @@ router.post('/', async (req, res) => {
 	console.log('webhook event received!', req.query, req.body);
 	let { object_id, event_time, object_type, owner_id } = req.query;
 	await Activity.create({
-		event_time: event_time,
+		_id: object_id,
+		event_time: new Date(event_time * 1000),
 		object_id: object_id,
 		object_type: object_type,
 		owner_id: owner_id
